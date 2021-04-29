@@ -2,9 +2,10 @@
   "name": "shopify-storefront-api",
   "version": "1.0.0",
   "description": "Shopify Storefront API connector",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup --config rollup.config.js"
   },
   "author": "",
   "license": "ISC",

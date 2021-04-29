@@ -1,3 +1,5 @@
+'use strict';
+
 // https://shopify.dev/docs/storefront-api/reference/common-objects/image
 const fragmentImage = `
 fragment FragmentImage on Image {
@@ -7,7 +9,7 @@ fragment FragmentImage on Image {
   transformedSrc(preferredContentType: WEBP)
   altText
 }
-`
+`;
 // https://shopify.dev/docs/storefront-api/reference/products/collection
 const fragmentCollection = `
 fragment FragmentCollection on Collection {
@@ -16,13 +18,13 @@ fragment FragmentCollection on Collection {
   description
   title
 }
-`
+`;
 const fragmentOptions = `
 fragment FragmentOption on SelectedOption {
   name
   value
 }
-`
+`;
 const fragmentVariant = `
 ${fragmentOptions}
 fragment FragmentVariant on ProductVariant {
@@ -38,7 +40,9 @@ fragment FragmentVariant on ProductVariant {
     ...FragmentOption
   }
 }
-`
+`;
+
+
 
 // https://shopify.dev/docs/storefront-api/reference/products/product
 
@@ -81,7 +85,7 @@ fragment FragmentProduct on Product {
   }
   title
 }
-`
+`;
 
 const fragmentCollectionWithProducts = `
 ${fragmentProduct}
@@ -95,7 +99,8 @@ fragment FragmentCollectionWithProducts on Collection {
     }
   } 
 }
-`
+`;
+
 
 // getStoreSettings() {
 
@@ -121,10 +126,10 @@ fragment FragmentCollectionWithProducts on Collection {
 
 // function getProductsByCategory(id) {}
 function parseProduct(product) {
-  const { id, handle, tags, priceRange, description, title } = product
-  const price = priceRange.maxVariantPrice
-  const variants = nodeArray(product.variants).map(parseVariant)
-  const images = nodeArray(product.images)
+  const { id, handle, tags, priceRange, description, title } = product;
+  const price = priceRange.maxVariantPrice;
+  const variants = nodeArray(product.variants).map(parseVariant);
+  const images = nodeArray(product.images);
   return { title, id, handle, tags, price, variants, images, description }
 }
 
@@ -139,11 +144,11 @@ function parseVariant(variant) {
     ...variant
   }
 }
-export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
+function initStorefrontApi(token, shopUrl, version='2021-04') {
   async function sendQuery(query) {
-    const url = new URL(shopUrl)
-    const graphQLQuery = `${url.origin}/api/${version}/graphql.json`
-
+    const url = new URL(shopUrl);
+    const graphQLQuery = `${url.origin}/api/${version}/graphql.json`;
+  
     return await fetch(graphQLQuery, {
       method: 'POST',
       headers: {
@@ -157,7 +162,7 @@ export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
       .then((res) => res.json())
       .then((res) => res.data)
   }
-
+  
   async function getProducts(first = 50) {
     const productQuery = `
       ${fragmentProduct}
@@ -170,10 +175,10 @@ export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
           }
         }
       }
-      `
-    const result = await sendQuery(productQuery)
-    if (!result.products) return []
-    return nodeArray(result.products).map(parseProduct)
+      `;
+      const result = await sendQuery(productQuery);
+      if (!result.products) return []
+      return nodeArray(result.products).map(parseProduct)
   }
   async function getProduct(id) {
     const query = `
@@ -183,11 +188,11 @@ export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
         ...FragmentProduct
       }
     }
-    `
-    const product = await sendQuery(query)
+    `;
+    const product = await sendQuery(query);
     return parseProduct(product)
   }
-
+  
   async function getProductBySlug(handle) {
     const query = `
     ${fragmentProduct}
@@ -196,11 +201,11 @@ export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
         ...FragmentProduct
       }
     }
-    `
-    const product = await sendQuery(query)
+    `;
+    const product = await sendQuery(query);
     return parseProduct(product)
   }
-
+  
   async function getProductsByCategory(handle) {
     const query = `
       ${fragmentCollectionWithProducts}
@@ -209,9 +214,11 @@ export default function initStorefrontApi(token, shopUrl, version = '2021-04') {
           ...FragmentCollectionWithProducts
         }
       }
-    `
-
+    `;
+  
     return await sendQuery(query)
   }
   return { sendQuery, getProducts, getProduct, getProductBySlug, getProductsByCategory }
 }
+
+module.exports = initStorefrontApi;
